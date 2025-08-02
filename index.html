@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3B82F6">
   <style>
-    body { margin:0; font-family: 'Helvetica Neue', Arial, sans-serif; background:#f5f5f5; color:#222; }
+    body { margin:0; font-family: 'Helvetica Neue', Arial, sans-serif; background:#f5f5f5; color:#222; padding-bottom: 100px; }
     header {
       background:#3B82F6;
       color:#fff;
@@ -57,6 +57,10 @@
       background:#3B82F6;
       padding:0.8rem 0;
       box-shadow:0 -2px 6px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    .nav.hidden-nav {
+      transform: translateY(100%);
     }
     .nav button {
       background:none;
@@ -130,7 +134,7 @@
     <p id="streakHistory">Current Streak: 0 days</p>
   </div>
 </div>
-<div class="nav">
+<div class="nav" id="bottomNav">
   <button onclick="showTab('homeTab')">Home</button>
   <button onclick="showTab('logTab')">Log</button>
   <button onclick="showTab('journalTab')">Journal</button>
@@ -224,6 +228,19 @@ function saveJournal() {
   localStorage.setItem('journal' + day, entry);
   alert('Journal saved with photo (if selected)!');
 }
+
+// Auto-hide nav on scroll
+let lastScrollY = window.scrollY;
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('bottomNav');
+  if (window.scrollY > lastScrollY) {
+    nav.classList.add('hidden-nav');
+  } else {
+    nav.classList.remove('hidden-nav');
+  }
+  lastScrollY = window.scrollY;
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   renderTasks();
   document.getElementById('waterDisplay').textContent = localStorage.getItem('water') || 0;
