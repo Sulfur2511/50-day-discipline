@@ -1,1 +1,152 @@
-<!-- Paste the HTML content from the document here -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>50 Day Discipline</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3B82F6">
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#fdfdfd; color:#222; }
+    header { background:#3B82F6; color:#fff; padding:1rem; text-align:center; }
+    .progress-bar { width:90%; background:#ddd; border-radius:20px; margin:1rem auto; height:20px; overflow:hidden; }
+    .progress { height:100%; background:#EF4444; width:0; transition:width 0.3s; }
+    .checklist { padding:1rem; }
+    .checklist label { display:flex; align-items:center; margin:0.5rem 0; }
+    .checklist input { margin-right:10px; }
+    .nav { position:fixed; bottom:0; width:100%; display:flex; justify-content:space-around; background:#3B82F6; padding:0.5rem 0; }
+    .nav button { background:none; border:none; color:#fff; font-size:1rem; }
+    .hidden { display:none; }
+    textarea { width:90%; margin:1rem; border-radius:8px; border:1px solid #ccc; padding:0.5rem; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>50 Day Discipline</h1>
+  <p id="dayCounter">Day 1 / 50</p>
+  <p id="streakCounter">🔥 Streak: 0</p>
+</header>
+<div class="progress-bar">
+  <div class="progress" id="progress"></div>
+</div>
+<div id="homeTab" class="tab">
+  <div class="checklist" id="taskList"></div>
+</div>
+<div id="logTab" class="tab hidden">
+  <h2 style="text-align:center;">Log Metrics</h2>
+  <div style="padding:1rem;">
+    <label>Weight (lbs): <input type="number" id="weightInput"></label>
+    <button onclick="saveWeight()">Save Weight</button>
+    <br><br>
+    <label>Water (oz): <span id="waterDisplay">0</span>/100</label>
+    <button onclick="addWater(25)">+25 oz</button>
+  </div>
+</div>
+<div id="journalTab" class="tab hidden">
+  <h2 style="text-align:center;">Journal</h2>
+  <textarea id="journalEntry" rows="5" placeholder="3 things I’m grateful for, 1 win, 1 improvement..."></textarea>
+  <button style="margin:1rem;" onclick="saveJournal()">Save Entry</button>
+</div>
+<div id="statsTab" class="tab hidden">
+  <h2 style="text-align:center;">Stats</h2>
+  <div style="padding:1rem;">
+    <p id="weightHistory">Weight history: None yet</p>
+    <p id="streakHistory">Current Streak: 0 days</p>
+  </div>
+</div>
+<div class="nav">
+  <button onclick="showTab('homeTab')">Home</button>
+  <button onclick="showTab('logTab')">Log</button>
+  <button onclick="showTab('journalTab')">Journal</button>
+  <button onclick="showTab('statsTab')">Stats</button>
+</div>
+<script>
+const tasks = [
+  "Strength Workout (20 min)",
+  "Workout (20 min)",
+  "Fasting",
+  "Healthy Diet",
+  "Water (100 oz)",
+  "Sleep 7+ hrs",
+  "Read 11 Pages",
+  "Journal",
+  "Journal Photo",
+  "Progress Picture",
+  "Daily Review"
+];
+let completed = JSON.parse(localStorage.getItem('completedTasks')) || [];
+let streak = parseInt(localStorage.getItem('streak')) || 0;
+let day = parseInt(localStorage.getItem('day')) || 1;
+function renderTasks() {
+  const taskList = document.getElementById('taskList');
+  taskList.innerHTML = '';
+  tasks.forEach((task, index) => {
+    const checked = completed.includes(index) ? 'checked' : '';
+    taskList.innerHTML += `<label><input type="checkbox" onchange="toggleTask(${index})" ${checked}> ${task}</label>`;
+  });
+  updateProgress();
+}
+function toggleTask(index) {
+  if (completed.includes(index)) {
+    completed = completed.filter(i => i !== index);
+  } else {
+    completed.push(index);
+  }
+  localStorage.setItem('completedTasks', JSON.stringify(completed));
+  updateProgress();
+}
+function updateProgress() {
+  const progress = document.getElementById('progress');
+  const percent = (completed.length / tasks.length) * 100;
+  progress.style.width = percent + '%';
+  if (percent === 100) {
+    incrementStreak();
+  }
+}
+function incrementStreak() {
+  streak++;
+  localStorage.setItem('streak', streak);
+  document.getElementById('streakCounter').textContent = `🔥 Streak: ${streak}`;
+}
+function resetDaily() {
+  completed = [];
+  localStorage.setItem('completedTasks', JSON.stringify(completed));
+  day++;
+  if(day > 50) day = 50;
+  localStorage.setItem('day', day);
+  document.getElementById('dayCounter').textContent = `Day ${day} / 50`;
+  renderTasks();
+}
+function showTab(tabId) {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.add('hidden'));
+  document.getElementById(tabId).classList.remove('hidden');
+}
+function addWater(amount) {
+  let water = parseInt(localStorage.getItem('water')) || 0;
+  water += amount;
+  if (water > 100) water = 100;
+  localStorage.setItem('water', water);
+  document.getElementById('waterDisplay').textContent = water;
+}
+function saveWeight() {
+  const weight = document.getElementById('weightInput').value;
+  let history = JSON.parse(localStorage.getItem('weightHistory')) || [];
+  history.push({day: day, weight: weight});
+  localStorage.setItem('weightHistory', JSON.stringify(history));
+  alert('Weight saved!');
+  document.getElementById('weightHistory').textContent = `Weight history: ${history.map(h => `Day ${h.day}: ${h.weight}lbs`).join(', ')}`;
+}
+function saveJournal() {
+  const entry = document.getElementById('journalEntry').value;
+  localStorage.setItem('journal' + day, entry);
+  alert('Journal saved!');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  renderTasks();
+  document.getElementById('waterDisplay').textContent = localStorage.getItem('water') || 0;
+  document.getElementById('streakCounter').textContent = `🔥 Streak: ${streak}`;
+  document.getElementById('dayCounter').textContent = `Day ${day} / 50`;
+});
+</script>
+</body>
+</html>
